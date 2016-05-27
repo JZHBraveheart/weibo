@@ -1,0 +1,41 @@
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.hwadee.weibo.dao.WeiboDao">
+
+
+	<select id="count" parameterType="int" resultType="int">
+		SELECT count(w.wid) 
+		FROM weibo w 
+		WHERE EXISTS(
+			select 'x' 
+			FROM follow f 
+			WHERE f.follow = w.account_id AND f.account_id=#{accountId}) or w.account_id=#{accountId}
+	</select>
+	
+	<select id="findById" parameterType="int" resultType="Weibo">
+		SELECT 
+			w.*,
+			a.`name` "account.name",
+			a.follow "account.follow",
+			a.fans "account.fans",
+			a.weibo "account.weibo",
+			a.pic "account.pic"
+		FROM weibo w INNER JOIN account a ON w.account_id=a.account_id
+		WHERE EXISTS(
+			SELECT 'x' 
+			FROM follow f 
+			WHERE f.follow=w.account_id AND f.account_id=#{accountId}) or w.account_id=#{accountId}
+			ORDER BY w.wid DESC LIMIT #{start}, #{size}
+	</select>
+	
+	
+	<insert id="insert" parameterType="Weibo" useGeneratedKeys="true" keyProperty="wid">
+		INSERT INTO weibo(account_id, content, liked, comment, wdatetime)
+		VALUES(#{account.accountId}, #{content}, #{liked}, #{comment}, #{wdatetime})
+	</insert>
+	
+	
+
+</mapper>
